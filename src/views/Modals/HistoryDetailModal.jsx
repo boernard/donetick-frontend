@@ -20,8 +20,8 @@ import { useNavigate } from 'react-router-dom'
 import ModalActions from '../../components/common/ModalActions'
 import { useLocalization } from '../../contexts/LocalizationContext'
 import { useResponsiveModal } from '../../hooks/useResponsiveModal'
-import { TASK_COLOR } from '../../utils/Colors.jsx'
-import RichTextEditor from '../components/RichTextEditor.jsx'
+import { TASK_COLOR } from '../../utils/Colors'
+import RichTextEditor from '../components/RichTextEditor'
 
 const STATUS_CONFIG = {
   0: {

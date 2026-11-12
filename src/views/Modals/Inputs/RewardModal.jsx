@@ -4,8 +4,8 @@ import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import ModalActions from '../../../components/common/ModalActions'
-import { useResponsiveModal } from '../../../hooks/useResponsiveModal.js'
-import { useNotification } from '../../../service/NotificationProvider.jsx'
+import { useResponsiveModal } from '../../../hooks/useResponsiveModal'
+import { useNotification } from '../../../service/NotificationProvider'
 import { CreateReward, UpdateReward } from '../../../utils/Fetcher'
 
 function RewardModal({ isOpen, onClose, reward }) {

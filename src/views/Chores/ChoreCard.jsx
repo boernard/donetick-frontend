@@ -33,13 +33,10 @@ import {
   getDueDateChipColor,
   getDueDateChipText,
   getRecurrentChipText,
-} from '../../utils/ChoreCardHelpers.jsx'
-import { notInCompletionWindow } from '../../utils/Chores.jsx'
-import { getTextColorFromBackgroundColor } from '../../utils/Colors.jsx'
-import {
-  getFirstLink,
-  splitTextAtFirstLink,
-} from '../../utils/ExternalLinks.js'
+} from '../../utils/ChoreCardHelpers'
+import { notInCompletionWindow } from '../../utils/Chores'
+import { getTextColorFromBackgroundColor } from '../../utils/Colors'
+import { getFirstLink, splitTextAtFirstLink } from '../../utils/ExternalLinks'
 import Priorities from '../../utils/Priorities'
 import ChoreActionMenu, {
   ChoreActionMenuTrigger,

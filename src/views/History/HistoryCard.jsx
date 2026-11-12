@@ -13,7 +13,7 @@ import moment from 'moment'
 import { useTranslation } from 'react-i18next'
 
 import { useLocalization } from '../../contexts/LocalizationContext'
-import { TASK_COLOR } from '../../utils/Colors.jsx'
+import { TASK_COLOR } from '../../utils/Colors'
 import PendingBadge from '../components/PendingBadge'
 
 const formatTime = seconds => {

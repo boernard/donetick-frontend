@@ -4,7 +4,7 @@ import { Box, Checkbox, Chip, Typography } from '@mui/joy'
 import {
   getPriorityColor,
   getTextColorFromBackgroundColor,
-} from '../../utils/Colors.jsx'
+} from '../../utils/Colors'
 import { useDateFormatter } from '../../utils/DateFormatter'
 
 const ArchivedChoreCard = ({

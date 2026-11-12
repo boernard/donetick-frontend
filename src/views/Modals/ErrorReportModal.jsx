@@ -21,7 +21,7 @@ import {
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
-import { useResponsiveModal } from '../../hooks/useResponsiveModal.js'
+import { useResponsiveModal } from '../../hooks/useResponsiveModal'
 import {
   collectErrorReport,
   formatErrorReport,

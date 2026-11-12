@@ -5,6 +5,8 @@ import vm from 'node:vm'
 
 import { transformSync } from '@swc/core'
 
+import { loadChorePermissions } from './helpers/loadSource.mjs'
+
 // Exercise the row's real render and handlers with lightweight hook/component
 // stubs, without needing the application providers or a browser.
 const source = readFileSync(
@@ -45,6 +47,18 @@ function render(overrides = {}, options = {}) {
     '../../../contexts/LocalizationContext': {
       useLocalization: () => ({ timeFormat: 'HH:mm' }),
     },
+    '../../../components/common/ExternalLinkChip': {
+      LinkTypeIcon: 'LinkTypeIcon',
+    },
+    '../../../hooks/useChorePermissions': loadChorePermissions({
+      user: () => ({ data: { id: 5 } }),
+      members: () => ({ data: { res: options.members || [] } }),
+      impersonation: () => ({ impersonatedUser: options.impersonatedUser }),
+    }),
+    '../../components/ChoreStatusChip': {
+      default: 'ChoreStatusChip',
+      __esModule: true,
+    },
     '../../../hooks/usePendingCommands': {
       usePendingCommands: () => ({ data: options.pendingCommands || [] }),
     },
@@ -62,8 +76,9 @@ function render(overrides = {}, options = {}) {
     },
     '../../../utils/Colors': { getPriorityColor: () => '#d32f2f' },
     '../../../utils/ExternalLinks': {
-      splitTextAtFirstHttpUrl: name => ({ before: name, after: '', url: null }),
-      getFirstHttpUrl: () => null,
+      splitTextAtFirstLink: name => ({ before: name, after: '', link: null }),
+      getFirstLink: () => null,
+      openExternalLink: () => {},
     },
     '../../components/ChoreActionMenu': {
       ChoreActionMenuTrigger: 'MenuTrigger',
@@ -146,22 +161,25 @@ test('start, pause and approval retain their existing task actions', () => {
     [2, 'start'],
     [3, 'approve'],
   ]) {
-    const row = render({ chore: { id: 9, name: 'Task', status, createdBy: 5 } })
+    const row = render(
+      { chore: { id: 9, name: 'Task', status, circleId: 1, assignedTo: 5 } },
+      { members: [{ userId: 5, circleId: 1, role: 'admin' }] },
+    )
     const button = control(row)
     assert.equal(button.props.disabled, false)
     button.props.onClick()
     assert.deepEqual(row.actions, [[action, 9]])
   }
-  const pending = { chore: { id: 9, name: 'Task', status: 3, createdBy: 8 } }
-  assert.equal(control(render(pending)).props.disabled, true)
+  // Approval is a reviewer (admin/manager) action; ownership does not grant it.
+  const pending = { chore: { id: 9, name: 'Task', status: 3, circleId: 1 } }
+  assert.equal(control(render(pending)), undefined)
   assert.equal(
-    control(render(pending, { members: [{ userId: 5, role: 'admin' }] })).props
-      .disabled,
-    false,
-  )
-  assert.equal(
-    control(render(pending, { impersonatedUser: { userId: 8 } })).props
-      .disabled,
+    control(
+      render(pending, {
+        members: [{ userId: 8, circleId: 1, role: 'manager' }],
+        impersonatedUser: { userId: 8 },
+      }),
+    ).props.disabled,
     false,
   )
 })

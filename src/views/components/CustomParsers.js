@@ -6,4 +6,4 @@ export {
   parsePoints,
   parsePriority,
   parseRepeatV2,
-} from '../../utils/TaskParsers.js'
+} from '../../utils/TaskParsers'

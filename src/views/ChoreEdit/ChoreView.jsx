@@ -40,16 +40,13 @@ import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
 
 import EmptyState from '../../components/common/EmptyState'
 import ExternalLinkChip from '../../components/common/ExternalLinkChip'
-import { useImpersonateUser } from '../../contexts/ImpersonateUserContext.jsx'
+import { useImpersonateUser } from '../../contexts/ImpersonateUserContext'
 import { useLocalization } from '../../contexts/LocalizationContext'
 import { useThemeSkin } from '../../contexts/ThemeSkinContext'
 import { useChorePermissions } from '../../hooks/useChorePermissions'
 import { useDescriptionHtml } from '../../hooks/useDescriptionHtml'
 import { usePendingCommands } from '../../hooks/usePendingCommands'
-import {
-  useChoreDetails,
-  useChoreHistory,
-} from '../../queries/ChoreQueries.jsx'
+import { useChoreDetails, useChoreHistory } from '../../queries/ChoreQueries'
 import {
   useChoreTimer,
   useDeleteTimeSession,
@@ -57,19 +54,16 @@ import {
   useResetChoreTimer,
   useStartChore,
 } from '../../queries/TimeQueries'
-import { useCircleMembers, useUserProfile } from '../../queries/UserQueries.jsx'
+import { useCircleMembers, useUserProfile } from '../../queries/UserQueries'
 import { useNotification } from '../../service/NotificationProvider'
 import {
   ChoreHistoryStatus,
   ChoreStatus,
   notInCompletionWindow,
-} from '../../utils/Chores.jsx'
-import { getTextColorFromBackgroundColor } from '../../utils/Colors.jsx'
+} from '../../utils/Chores'
+import { getTextColorFromBackgroundColor } from '../../utils/Colors'
 import { commandQueue, CommandType } from '../../utils/CommandQueue'
-import {
-  getFirstLink,
-  splitTextAtFirstLink,
-} from '../../utils/ExternalLinks.js'
+import { getFirstLink, splitTextAtFirstLink } from '../../utils/ExternalLinks'
 import {
   ApproveChore,
   ArchiveChore,
@@ -87,25 +81,25 @@ import {
   UpdateDueDate,
 } from '../../utils/Fetcher'
 import { offlineDB } from '../../utils/OfflineDB'
-import { getSafeBottomPadding } from '../../utils/SafeAreaUtils.js'
+import { getSafeBottomPadding } from '../../utils/SafeAreaUtils'
 import ChoreActionMenu from '../components/ChoreActionMenu'
 import ChoreStatusChip from '../components/ChoreStatusChip'
 import DueDatePickerModal, {
   combineDueDate,
   splitDueDate,
 } from '../components/DueDatePickerModal'
-import LoadingComponent from '../components/Loading.jsx'
+import LoadingComponent from '../components/Loading'
 import PendingBadge from '../components/PendingBadge'
-import RichTextEditor from '../components/RichTextEditor.jsx'
-import SubTasks from '../components/SubTask.jsx'
+import RichTextEditor from '../components/RichTextEditor'
+import SubTasks from '../components/SubTask'
 import AssigneeModal from '../Modals/Inputs/AssigneeModal'
 import AttachmentBrowserModal from '../Modals/Inputs/AttachmentBrowserModal'
 import ConfirmationModal from '../Modals/Inputs/ConfirmationModal'
 import NoteViewerModal from '../Modals/Inputs/NoteViewerModal'
 import NudgeModal from '../Modals/Inputs/NudgeModal'
 import WriteNFCModal from '../Modals/Inputs/WriteNFCModal'
-import TimePassedCard from './TimePassedCard.jsx'
-import TimerSplitButton from './TimerSplitButton.jsx'
+import TimePassedCard from './TimePassedCard'
+import TimerSplitButton from './TimerSplitButton'
 
 const isNetworkError = err =>
   err instanceof TypeError && err.message === 'Failed to fetch'

@@ -1,4 +1,4 @@
-import { customDueDateBounds } from './CustomDueDate.js'
+import { customDueDateBounds } from './CustomDueDate'
 
 /**
  * Filter Engine - Evaluates filter conditions against chores

@@ -18,11 +18,11 @@ test('task detail actions use the theme accent rather than success green', () =>
   }
   assert.match(
     source('views/ChoreEdit/TimerSplitButton.jsx'),
-    /'warning' : 'primary'/,
+    /chore.status === 1 \? 'warning' : completionColor/,
   )
   assert.match(
     source('views/ChoreEdit/TimePassedCard.jsx'),
-    /color='primary'[\s\S]*?handleAction\('resume'\)/,
+    /color=\{completionColor\}[\s\S]*?handleAction\('resume'\)/,
   )
 })
 
@@ -49,7 +49,7 @@ test('cards preserve default green completion actions and custom theme accents',
   )
   assert.match(
     source('views/Chores/components/MultiSelectToolbar.jsx'),
-    /color='primary'\s+onClick=\{onComplete\}/,
+    /color=\{completionColor\}\s+onClick=\{onComplete\}/,
   )
   assert.match(
     source('views/Chores/ArchivedTasks.jsx'),

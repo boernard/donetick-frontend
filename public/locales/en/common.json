@@ -728,5 +728,10 @@
       "voice": "Capture by voice",
       "scan": "Scan to task"
     }
+  },
+  "appCrash": {
+    "title": "Something went wrong",
+    "description": "Donetick hit an unexpected error. Reloading usually fixes it.",
+    "reload": "Reload"
   }
 }

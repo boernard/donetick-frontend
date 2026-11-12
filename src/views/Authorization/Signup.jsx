@@ -4,7 +4,7 @@ import React from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 
-import { useAuth } from '../../hooks/useAuth.jsx'
+import { useAuth } from '../../hooks/useAuth'
 import { useNotification } from '../../service/NotificationProvider'
 import { signUp } from '../../utils/Fetcher'
 import { getPendingInvite, joinCirclePath } from '../../utils/PendingInvite'

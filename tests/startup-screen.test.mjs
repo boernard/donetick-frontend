@@ -56,7 +56,7 @@ test('startup does not depend on translations, providers, or app chunks', () => 
 
 test('startup uses the original cyan accent in light and dark mode', () => {
   const style = html.match(/<style>([\s\S]*?)<\/style>/)[1]
-  const [light, dark] = style.split('@media (prefers-color-scheme: dark)')
+  const [light, dark] = style.split(":root[data-startup-theme='dark']")
   assert.match(light, /--startup-accent: #0891b2;/)
   assert.match(light, /--startup-soft: #cffafe;/)
   assert.match(dark, /--startup-accent: #67e8f9;/)
@@ -67,7 +67,7 @@ test('startup uses the original cyan accent in light and dark mode', () => {
 test('startup styles are inline, theme-aware and respect reduced motion', () => {
   const style = html.match(/<style>([\s\S]*?)<\/style>/)[1]
   assert.match(style, /\.startup-screen\s*\{/)
-  assert.match(style, /prefers-color-scheme: dark/)
+  assert.match(style, /data-startup-theme='dark'/)
   assert.match(style, /prefers-reduced-motion: reduce/)
   assert.match(style, /animation: none/)
   assert.ok(html.indexOf('<style>') < html.indexOf('<body>'))

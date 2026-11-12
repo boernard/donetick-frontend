@@ -4,7 +4,8 @@ import './index.css'
 import React from 'react'
 import ReactDOM from 'react-dom/client'
 
-import StartupScreen from './components/StartupScreen.jsx'
+import ErrorBoundary from './components/ErrorBoundary'
+import StartupScreen from './components/StartupScreen'
 
 const marketingHosts = new Set(['donetick.com', 'www.donetick.com'])
 // ?site=marketing works in every build, not just dev, so preview deploys on
@@ -16,13 +17,15 @@ const isMarketingSite =
   new URLSearchParams(window.location.search).get('site') === 'marketing'
 
 export const Site = React.lazy(() =>
-  isMarketingSite ? import('./MarketingApp.jsx') : import('./Application.jsx'),
+  isMarketingSite ? import('./MarketingApp') : import('./Application'),
 )
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
-    <React.Suspense fallback={<StartupScreen />}>
-      <Site />
-    </React.Suspense>
+    <ErrorBoundary>
+      <React.Suspense fallback={<StartupScreen />}>
+        <Site />
+      </React.Suspense>
+    </ErrorBoundary>
   </React.StrictMode>,
 )

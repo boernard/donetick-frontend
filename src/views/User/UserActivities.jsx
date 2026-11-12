@@ -53,9 +53,9 @@ import {
   useDeleteChoreHistory,
   useUpdateChoreHistory,
 } from '../../queries/ChoreQueries'
-import { useCircleMembers, useUserProfile } from '../../queries/UserQueries.jsx'
+import { useCircleMembers, useUserProfile } from '../../queries/UserQueries'
 import { ChoresGrouper } from '../../utils/Chores'
-import { COLORS, TASK_COLOR } from '../../utils/Colors.jsx'
+import { COLORS, TASK_COLOR } from '../../utils/Colors'
 import { isPlusHistoryWindow } from '../../utils/entitlements'
 import LoadingComponent from '../components/Loading'
 import { useLabels } from '../Labels/LabelQueries'

@@ -6,18 +6,18 @@ Siblings: [directory-map.md](directory-map.md) (where files live), [domain-model
 
 ## Stack
 
-| Layer | Choice |
-|---|---|
-| UI | React 18, MUI Joy (`@mui/joy` beta) + some `@mui/material`, emotion (RTL via `stylis-plugin-rtl`), Tailwind config present |
-| Build | Vite + `@vitejs/plugin-react-swc`, `vite-plugin-pwa` (`vite.config.mjs`) |
-| Routing | `react-router-dom` v6 `createBrowserRouter` (data router, but no loaders) |
-| Server state | `@tanstack/react-query` v5 |
-| Realtime | SSE (`event-source-polyfill` on web, native `EventSource` on Capacitor) |
-| Native | Capacitor 8 (`capacitor.config.ts`), appId `com.donetick.app`, `webDir: dist` |
-| Offline store | IndexedDB (web) / `@capacitor-community/sqlite` (native), same DB name `donetick_offline` |
-| i18n | `i18next` (`src/i18n/config.js`, locales in `public/locales`) |
-| Analytics | PostHog (`src/analytics`), OpenReplay dep present (start call is commented out in `src/App.jsx:201`) |
-| Language | JS/JSX; `tsconfig.json` and `capacitor.config.ts` only |
+| Layer         | Choice                                                                                                                     |
+| ------------- | -------------------------------------------------------------------------------------------------------------------------- |
+| UI            | React 18, MUI Joy (`@mui/joy` beta) + some `@mui/material`, emotion (RTL via `stylis-plugin-rtl`), Tailwind config present |
+| Build         | Vite + `@vitejs/plugin-react-swc`, `vite-plugin-pwa` (`vite.config.mjs`)                                                   |
+| Routing       | `react-router-dom` v6 `createBrowserRouter` (data router, but no loaders)                                                  |
+| Server state  | `@tanstack/react-query` v5                                                                                                 |
+| Realtime      | SSE (`event-source-polyfill` on web, native `EventSource` on Capacitor)                                                    |
+| Native        | Capacitor 8 (`capacitor.config.ts`), appId `com.donetick.app`, `webDir: dist`                                              |
+| Offline store | IndexedDB (web) / `@capacitor-community/sqlite` (native), same DB name `donetick_offline`                                  |
+| i18n          | `i18next` (`src/i18n/config.js`, locales in `public/locales`)                                                              |
+| Analytics     | PostHog (`src/analytics`), OpenReplay dep present (start call is commented out in `src/App.jsx:201`)                       |
+| Language      | JS/JSX; `tsconfig.json` and `capacitor.config.ts` only                                                                     |
 
 Path alias: `@` -> `/src` (`vite.config.mjs`, resolve.alias). Many files still use relative imports.
 
@@ -33,14 +33,14 @@ Path alias: `@` -> `/src` (`vite.config.mjs`, resolve.alias). Many files still u
 
 `src/contexts/Contexts.jsx:9-18` (order matters, listed as array):
 
-| # | Provider | Notes |
-|---|---|---|
-| 1 | `AlertsProvider` (`src/service/AlertsProvider.jsx`) | modal-style alerts |
-| 2 | `LocalizationProvider` | must be above Theme: theme reads language for text direction + emotion cache |
-| 3 | `ThemeContext` | Joy theme, skins, `themeMode` in localStorage |
-| 4 | `QueryContext` | creates `QueryClient`; kicks off offline hydration + widget sync (see below) |
-| 5 | `NotificationProvider` | toasts |
-| 6 | `RouterContext` | `RouterProvider`; renders `App` as the route element |
+| #   | Provider                                            | Notes                                                                        |
+| --- | --------------------------------------------------- | ---------------------------------------------------------------------------- |
+| 1   | `AlertsProvider` (`src/service/AlertsProvider.jsx`) | modal-style alerts                                                           |
+| 2   | `LocalizationProvider`                              | must be above Theme: theme reads language for text direction + emotion cache |
+| 3   | `ThemeContext`                                      | Joy theme, skins, `themeMode` in localStorage                                |
+| 4   | `QueryContext`                                      | creates `QueryClient`; kicks off offline hydration + widget sync (see below) |
+| 5   | `NotificationProvider`                              | toasts                                                                       |
+| 6   | `RouterContext`                                     | `RouterProvider`; renders `App` as the route element                         |
 
 Inside the router, `src/App.jsx:233-247`:
 
@@ -86,16 +86,16 @@ view -> query/mutation hook (src/queries/*, views/*/*Queries.js)
 
 Gated by `isOfflineFeatureEnabled()` (`src/utils/OfflineFeatureToggle.js`): localStorage key `offline_feature_enabled`, default **on** when unset. Toggle fires a window event; there is a helper to clear Cache Storage.
 
-| Piece | File | Role |
-|---|---|---|
-| `offlineDB` | `src/utils/OfflineDB.js` | Facade over two backends picked at runtime: `SQLiteBackend` (native, `:49`) and `IndexedDBBackend` (web, `:539`). Stores chores (+`sync_version`), history, `command_queue`, `sync_meta` (cursor), and a generic KV (`saveKV/getKV`) |
-| `commandQueue` | `src/utils/CommandQueue.js` | Persistent queue of offline writes. `CommandType` enum (create/update/complete/skip/start/pause/delete/archive/reschedule/move-project...). `compact()` merges consecutive updates and folds updates into a pending create; `remapEntityId(tempId, realId)` swaps `temp_*` ids after create |
-| `syncEngine` | `src/utils/SyncEngine.js` | `sync()` = reset stuck commands -> compact -> replay (`_replayCommands`) -> delta sync (`GET /sync/changes?since=<cursor>`, paged) -> refresh image cache. Concurrent callers are coalesced into one follow-up run (`:70-95`). `MAX_COMMAND_RETRIES = 8`; delta loop aborts at 500 pages or when the token disappears |
-| `NetworkManager` | `src/hooks/NetworkManager.jsx` | Singleton `networkManager`: `deviceOnline` (Capacitor Network) and `serverReachable` (set by fetch success/failure); `isOnline` is both |
-| `useSyncOnReconnect` | `src/hooks/useSyncOnReconnect.js` | Mounted in `AppContent`. Triggers `syncEngine.sync()` on network change, tab visible, `online`, native app resume; one self-rescheduling timer: 30 s with pending commands, 15 s probing unreachable server, 5 min cache refresh. After a successful sync it calls `queryClient.invalidateQueries()` (everything) |
-| `OfflineHydration` | `src/queries/OfflineHydration.js` | Called (not awaited) from `QueryContext`. Seeds query cache from the offline store with `updatedAt: 1` so data renders instantly yet is refetched. Reads KV keys `user_profile`, `labels`, `projects`, `circle_members`, `filters`, `project_sections:<id>` and all chores. Key names must match the writers in the query files (`OfflineHydration.js:45-49`) |
-| Pending creates | `src/utils/PendingChores.js` | `mergePendingCreates` overlays queued temp chores onto lists |
-| Images | `src/utils/ImageCache.js` | Prefetch/evict images referenced by cached chores; cleared on logout |
+| Piece                | File                              | Role                                                                                                                                                                                                                                                                                                                                                          |
+| -------------------- | --------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `offlineDB`          | `src/utils/OfflineDB.js`          | Facade over two backends picked at runtime: `SQLiteBackend` (native, `:49`) and `IndexedDBBackend` (web, `:539`). Stores chores (+`sync_version`), history, `command_queue`, `sync_meta` (cursor), and a generic KV (`saveKV/getKV`)                                                                                                                          |
+| `commandQueue`       | `src/utils/CommandQueue.js`       | Persistent queue of offline writes. `CommandType` enum (create/update/complete/skip/start/pause/delete/archive/reschedule/move-project...). `compact()` merges consecutive updates and folds updates into a pending create; `remapEntityId(tempId, realId)` swaps `temp_*` ids after create                                                                   |
+| `syncEngine`         | `src/utils/SyncEngine.js`         | `sync()` = reset stuck commands -> compact -> replay (`_replayCommands`) -> delta sync (`GET /sync/changes?since=<cursor>`, paged) -> refresh image cache. Concurrent callers are coalesced into one follow-up run (`:70-95`). `MAX_COMMAND_RETRIES = 8`; delta loop aborts at 500 pages or when the token disappears                                         |
+| `NetworkManager`     | `src/hooks/NetworkManager.jsx`    | Singleton `networkManager`: `deviceOnline` (Capacitor Network) and `serverReachable` (set by fetch success/failure); `isOnline` is both                                                                                                                                                                                                                       |
+| `useSyncOnReconnect` | `src/hooks/useSyncOnReconnect.js` | Mounted in `AppContent`. Triggers `syncEngine.sync()` on network change, tab visible, `online`, native app resume; one self-rescheduling timer: 30 s with pending commands, 15 s probing unreachable server, 5 min cache refresh. After a successful sync it calls `queryClient.invalidateQueries()` (everything)                                             |
+| `OfflineHydration`   | `src/queries/OfflineHydration.js` | Called (not awaited) from `QueryContext`. Seeds query cache from the offline store with `updatedAt: 1` so data renders instantly yet is refetched. Reads KV keys `user_profile`, `labels`, `projects`, `circle_members`, `filters`, `project_sections:<id>` and all chores. Key names must match the writers in the query files (`OfflineHydration.js:45-49`) |
+| Pending creates      | `src/utils/PendingChores.js`      | `mergePendingCreates` overlays queued temp chores onto lists                                                                                                                                                                                                                                                                                                  |
+| Images               | `src/utils/ImageCache.js`         | Prefetch/evict images referenced by cached chores; cleared on logout                                                                                                                                                                                                                                                                                          |
 
 `useChores` read path (`ChoreQueries.jsx:~64`): if online, `syncEngine.sync()`; if a sync cursor exists, return the cached list merged with pending creates; else fall back to API, then to cache on failure.
 
@@ -135,14 +135,14 @@ Gated by `isOfflineFeatureEnabled()` (`src/utils/OfflineFeatureToggle.js`): loca
 
 ## Build modes and environments
 
-| Mode | Command | Env file loaded | Notes |
-|---|---|---|---|
-| Dev | `npm run dev` / `npm start` (`--host`) | `.env`, `.env.development` | console/debugger kept |
-| Default build | `npm run build` (`vite build`) | `.env` (production) | `esbuild.drop: ['console','debugger']` in builds (`vite.config.mjs`) |
-| Self-hosted | `npm run build-selfhosted` (`vite build --mode selfhosted`) | `.env.selfhosted` | `VITE_IS_SELF_HOSTED` hides social login and shows self-host settings |
-| Cloudflare Pages | `npm run build-cf`, driven by `wrangler.toml` (`[build] command`, output `dist`) | `.env` | Deletes `package-lock.json`, reinstalls and force-installs Linux rollup/swc binaries before building |
-| Windows / Apple Silicon | `build-win`, `setup-m1`, `setup-apple-silicon` | - | Platform-specific native rollup/swc installs |
-| Native | `npm run ios` / `android` (`build` + `npx cap sync <platform>`), `cap`, `android:dev` (live reload) | `.env` | Needs `dist/` first |
+| Mode                    | Command                                                                                             | Env file loaded            | Notes                                                                                                |
+| ----------------------- | --------------------------------------------------------------------------------------------------- | -------------------------- | ---------------------------------------------------------------------------------------------------- |
+| Dev                     | `npm run dev` / `npm start` (`--host`)                                                              | `.env`, `.env.development` | console/debugger kept                                                                                |
+| Default build           | `npm run build` (`vite build`)                                                                      | `.env` (production)        | `esbuild.drop: ['console','debugger']` in builds (`vite.config.mjs`)                                 |
+| Self-hosted             | `npm run build-selfhosted` (`vite build --mode selfhosted`)                                         | `.env.selfhosted`          | `VITE_IS_SELF_HOSTED` hides social login and shows self-host settings                                |
+| Cloudflare Pages        | `npm run build-cf`, driven by `wrangler.toml` (`[build] command`, output `dist`)                    | `.env`                     | Deletes `package-lock.json`, reinstalls and force-installs Linux rollup/swc binaries before building |
+| Windows / Apple Silicon | `build-win`, `setup-m1`, `setup-apple-silicon`                                                      | -                          | Platform-specific native rollup/swc installs                                                         |
+| Native                  | `npm run ios` / `android` (`build` + `npx cap sync <platform>`), `cap`, `android:dev` (live reload) | `.env`                     | Needs `dist/` first                                                                                  |
 
 - Env files present (names only): `.env`, `.env.development`, `.env.selfhosted`. Variables referenced in code: `VITE_APP_API_URL` (`AUTO` supported), `VITE_APP_REDIRECT_URL`, `VITE_APP_GOOGLE_CLIENT_ID`, `VITE_APP_IOS_CLIENT_ID`, `VITE_IS_SELF_HOSTED`, `VITE_POSTHOG_KEY`/`VITE_POSTHOG_HOST`, `VITE_REACT_APP_REVENUECAT_API_KEY_IOS|ANDROID`, `VITE_FEEDBACK_WEBHOOK_URL`, `VITE_ERROR_REPORT_WEBHOOK_URL`, `VITE_BRIDGE_WEB_URL`. `VITE_APP_VERSION` is injected from `package.json` via `define`. `VITE_IS_LANDING_DEFAULT` and `VITE_OPENREPLAY_PROJECT_KEY` appear in env files but no reader was found in `src/` (unverified: may be dead).
 - PWA (`vite-plugin-pwa`): `registerType: 'prompt'`, no `skipWaiting`/`clientsClaim` (new worker activates only after the user taps refresh in the snackbar), `navigateFallback: /index.html` denying `/api/` and `/swagger`, 6 MB cache file limit, manifest defined inline in `vite.config.mjs`.

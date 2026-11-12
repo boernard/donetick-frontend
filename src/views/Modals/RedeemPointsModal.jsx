@@ -13,10 +13,10 @@ import {
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
-import ModalActions from '../../components/common/ModalActions.jsx'
-import NumberInput from '../../components/common/NumberInput.jsx'
-import { useResponsiveModal } from '../../hooks/useResponsiveModal.js'
-import { resolvePhotoURL } from '../../utils/Helpers.jsx'
+import ModalActions from '../../components/common/ModalActions'
+import NumberInput from '../../components/common/NumberInput'
+import { useResponsiveModal } from '../../hooks/useResponsiveModal'
+import { resolvePhotoURL } from '../../utils/Helpers'
 
 function RedeemPointsModal({ config }) {
   const { t } = useTranslation('points')

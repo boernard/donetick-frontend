@@ -10,7 +10,7 @@ import {
   canScheduleNotification,
   scheduleChoreNotification,
 } from '../views/Chores/LocalNotificationScheduler'
-import { useAuth } from './useAuth.jsx'
+import { useAuth } from './useAuth'
 
 // Shared across effect lifetimes, including StrictMode remounts. A replacement
 // must finish cancelling AND scheduling before the next replacement starts.

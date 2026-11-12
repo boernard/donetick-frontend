@@ -6,7 +6,7 @@ import { useChores } from '../queries/ChoreQueries'
 import { useUserProfile } from '../queries/UserQueries'
 import { setAppBadgeCount } from '../utils/AppBadge'
 import { ChoreStatus } from '../utils/Chores'
-import { useAuth } from './useAuth.jsx'
+import { useAuth } from './useAuth'
 
 /**
  * Keeps the native app icon badge in sync with the number of tasks that are

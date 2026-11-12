@@ -16,7 +16,10 @@ test('header, sidebar, drawer and bottom navigation use the themed canvas', () =
   const bottomNav = readSource('MobileBottomNav')
   assert.equal((navbar.match(/bgcolor: 'background.body'/g) || []).length, 3)
   assert.match(bottomNav, /bgcolor: 'background.body'/)
-  assert.doesNotMatch(navbar, /background-surfaceChannel|backdropFilter/)
+  assert.doesNotMatch(
+    navbar,
+    /background-surfaceChannel|backdropFilter: '(?!none)/,
+  )
 })
 
 test('navigation branding follows the accent instead of hardcoded cyan', () => {

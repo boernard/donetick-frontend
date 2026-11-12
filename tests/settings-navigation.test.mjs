@@ -44,7 +44,11 @@ test('every destination has one home, a translated label, and a working route', 
       )
     assert.ok(locale.overview.sections[section.id]?.title, section.id)
     assert.ok(locale.overview.sections[section.id]?.description, section.id)
-    assert.ok(router.includes(`path: '${section.id}'`), section.id)
+    assert.ok(
+      router.includes(`path: '${section.id}'`) ||
+        router.includes(`path: '/${section.id}'`),
+      section.id,
+    )
   }
   for (const group of groups) assert.ok(locale.overview.groups[group])
 })

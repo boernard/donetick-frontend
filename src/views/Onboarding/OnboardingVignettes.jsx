@@ -21,7 +21,7 @@ import { useTranslation } from 'react-i18next'
 import {
   getPriorityColor,
   getTextColorFromBackgroundColor,
-} from '../../utils/Colors.jsx'
+} from '../../utils/Colors'
 
 /**
  * Small living previews of the real product, one per onboarding slide.

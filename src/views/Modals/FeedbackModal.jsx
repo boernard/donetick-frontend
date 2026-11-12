@@ -18,7 +18,7 @@ import { useTranslation } from 'react-i18next'
 import { useLocation } from 'react-router-dom'
 
 import { track } from '../../analytics'
-import { useResponsiveModal } from '../../hooks/useResponsiveModal.js'
+import { useResponsiveModal } from '../../hooks/useResponsiveModal'
 import { useUserProfile } from '../../queries/UserQueries'
 import {
   FEEDBACK_CATEGORIES,

@@ -1,5 +1,5 @@
-import { generateUUID } from '../UUID.js'
-import { resolveImportAssignment } from './importAssignment.js'
+import { generateUUID } from '../UUID'
+import { resolveImportAssignment } from './importAssignment'
 
 // Descriptions in the portable format are plain text, not executable HTML.
 const escapeHtml = text =>

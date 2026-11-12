@@ -1,16 +1,16 @@
 # Status and roadmap
 
-Source: frontend audit of 2026-11-12 (TypeScript migration, testability/stability, design system). Figures come from that audit and may drift; re-measure before relying on them. Nothing listed under "Pending" had been started when this was written.
+Source: frontend audit of 2026-11-12 (TypeScript migration, testability/stability, design system). Figures come from that audit and may drift; re-measure before relying on them. The "Now" horizon below has been done (see the Done column).
 
 ## Snapshot
 
-| Area | State |
-|---|---|
-| Language | 286 `.jsx` (~82.9k LOC) + 116 `.js` (~17.9k LOC), 0 `.ts`/`.tsx`. Views are ~76k of ~100k LOC. |
-| Type checking | None. Vite uses SWC (strips types). `tsconfig.json` exists but is unusable (`nodenext`, no `jsx`/`allowJs`/`include`). CI has no `tsc` step. |
-| Tests | 19 node-runner files in `tests/`; no `test` script; not run in CI or pre-commit. Verified 2026-11-12: 107 tests, 92 pass, 15 fail (see `testing-and-ci.md`). No Vitest/jsdom/Testing Library/coverage. |
-| Lint | 1 error (prettier, `src/views/Projects/ProjectQueries.js:533`) + 2,292 warnings (full `eslint src` takes ~18s) (1,768 `react/prop-types`, 83 `set-state-in-effect`, 53 `exhaustive-deps`). |
-| Design system | Partial. Joy theme + presets + `AppModal`/`EmptyState` exist. No tokens for spacing/type/shadow/z-index/motion. |
+| Area          | State                                                                                                                                                                                                  |
+| ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Language      | 286 `.jsx` (~82.9k LOC) + 116 `.js` (~17.9k LOC), 0 `.ts`/`.tsx`. Views are ~76k of ~100k LOC.                                                                                                         |
+| Type checking | `tsc --noEmit` via `npm run typecheck` (bundler-mode `tsconfig.json`, `allowJs`, `checkJs` off, 0 errors) and a CI step. Vite uses SWC (strips types).                                                 |
+| Tests         | 19 node-runner files in `tests/`; no `test` script; not run in CI or pre-commit. Verified 2026-11-12: 107 tests, 92 pass, 15 fail (see `testing-and-ci.md`). No Vitest/jsdom/Testing Library/coverage. |
+| Lint          | 1 error (prettier, `src/views/Projects/ProjectQueries.js:533`) + 2,292 warnings (full `eslint src` takes ~18s) (1,768 `react/prop-types`, 83 `set-state-in-effect`, 53 `exhaustive-deps`).             |
+| Design system | Partial. Joy theme + presets + `AppModal`/`EmptyState` exist. No tokens for spacing/type/shadow/z-index/motion.                                                                                        |
 
 ## Agreed top 5 (value ÷ effort)
 
@@ -18,32 +18,33 @@ Source: frontend audit of 2026-11-12 (TypeScript migration, testability/stabilit
 2. **Make TypeScript real.** Replace `tsconfig.json` with a bundler config, add `src/vite-env.d.ts` and a `typecheck` script.
 3. **Type the API layer and test the core.** Domain types in `src/types/`, split `Fetcher.jsx` by domain, then Vitest tests for token refresh, `OfflineDB` sync, SSE cache patching, task payload serializer.
 4. **Design tokens + `ui/` wrapper layer.** `src/design/tokens.js`, then `src/ui/` (toast, modal, chip first); drop Tailwind and Material.
-5. **Resilience.** Top-level ErrorBoundary, route-level `React.lazy` + `manualChunks`, token-refresh tests.
+5. **Resilience.** ~~Top-level ErrorBoundary~~ **done**, route-level `React.lazy` + `manualChunks`, token-refresh tests.
 
 ## Roadmap
 
-| Horizon | Item | Effort | Unblocks |
-|---|---|---|---|
-| Now (≤1 wk) | Fix prettier error; fix or delete failing tests | S | trustworthy CI |
-| | New tsconfig, `typecheck` script, CI step | S | all TS work |
-| | Vitest + `test` script + CI step | S | new tests |
-| | Strip the 94 `.js`/`.jsx` import suffixes (own PR) | S | file renames |
-| | Add tests around token refresh in `src/utils/ApiClient.js` (re-verify the race first); remove the token log in `src/hooks/useSSE.js` (~line 50) | S | auth stability |
-| | Top-level ErrorBoundary | S | crash recovery |
-| Next (≤1 mo) | Domain types; split `Fetcher.jsx` by domain | M | typed data layer |
-| | First four core tests (ApiClient refresh, OfflineDB queue/sync, SSE patching, task payload serializer) | M | safe refactors |
-| | Route-level lazy loading, `manualChunks` | M | bundle size |
-| | `tokens.js` + lint warnings (raw colours, z-index, shadows) | M | design system |
-| | `ui/` toast, modal, chip; remove Tailwind | M | Joy insulation |
-| Later | Convert layers to TS (utils → queries/hooks → contexts/service → components → views); ratchet strictness | L | type safety |
-| | Split god files (`ChoreEdit`, `AddTaskModal`, `MyChores`, `ChoreView`) | L | testability |
-| | RTL logical properties, contrast checks, 44px targets | M | accessibility |
+| Horizon      | Item                                                                                                                                                         | Effort | Unblocks         |
+| ------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------ | ---------------- |
+| Now (≤1 wk)  | ~~Fix prettier error; fix or delete failing tests~~ **done**                                                                                                 | S      | trustworthy CI   |
+|              | ~~New tsconfig, `typecheck` script, CI step~~ **done**                                                                                                       | S      | all TS work      |
+|              | ~~Vitest + `test` script + CI step~~ **done**                                                                                                                | S      | new tests        |
+|              | ~~Strip the 94 `.js`/`.jsx` import suffixes (own PR)~~ **done**                                                                                              | S      | file renames     |
+|              | ~~Add tests around token refresh in `src/utils/ApiClient.js` (re-verify the race first); remove the token log in `src/hooks/useSSE.js` (~line 50)~~ **done** | S      | auth stability   |
+|              | Top-level ErrorBoundary                                                                                                                                      | S      | crash recovery   |
+| Next (≤1 mo) | Domain types; split `Fetcher.jsx` by domain                                                                                                                  | M      | typed data layer |
+|              | First four core tests (ApiClient refresh, OfflineDB queue/sync, SSE patching, task payload serializer)                                                       | M      | safe refactors   |
+|              | Route-level lazy loading, `manualChunks`                                                                                                                     | M      | bundle size      |
+|              | `tokens.js` + lint warnings (raw colours, z-index, shadows)                                                                                                  | M      | design system    |
+|              | `ui/` toast, modal, chip; remove Tailwind                                                                                                                    | M      | Joy insulation   |
+| Later        | Convert layers to TS (utils → queries/hooks → contexts/service → components → views); ratchet strictness                                                     | L      | type safety      |
+|              | Split god files (`ChoreEdit`, `AddTaskModal`, `MyChores`, `ChoreView`)                                                                                       | L      | testability      |
+|              | RTL logical properties, contrast checks, 44px targets                                                                                                        | M      | accessibility    |
 
 ## TypeScript migration plan
 
 Proposed `tsconfig.json`: `module: ESNext`, `moduleResolution: bundler`, `jsx: react-jsx`, `allowJs: true`, `checkJs: false`, `noEmit`, `skipLibCheck`, `isolatedModules`, `strict: false`, `paths: {"@/*": ["src/*"]}`, `types: ["vite/client"]`, `include: ["src"]`. Baseline: 0 errors with `checkJs` off; 1,214 with `checkJs` on and strict off.
 
 PR sequence:
+
 1. Config, `src/vite-env.d.ts`, `typecheck` script, CI step.
 2. Codemod removing explicit `.js`/`.jsx` import suffixes.
 3. `src/types/` domain types and typed, domain-split `Fetcher`.
@@ -69,6 +70,7 @@ Vitest + jsdom + Testing Library + msw + v8 coverage; ~70% unit, ~25% hook/compo
 ## Design system plan
 
 Order: tokens → lint warnings → `ui/` primitives → import codemods → warnings to errors.
+
 - `src/design/tokens.js`: semantic colour roles, status vs label palettes, radius, 4px spacing scale, type scale, shadows, z-index, motion. `ThemeContext.jsx`, `startupTheme.js`, `constants/theme.js` derive from it.
 - `src/ui/`: Button, IconButton, Input, Card, Chip, ListRow, AppModal, EmptyState, Toast. Biggest duplication: Snackbar (8 files), modals (35 files still on `useResponsiveModal`), Chip (62 files).
 - Docs: expand `/test` into a gallery, write `DESIGN.md` beside `PRODUCT.md`.
@@ -84,4 +86,4 @@ Order: tokens → lint warnings → `ui/` primitives → import codemods → war
 
 Global `strict`/`checkJs`, swapping Joy before `ui/` exists, big-bang view conversion, more source-grep tests.
 
-Last verified: 2026-11-12 at commit 99e6a9f
+Last verified: 2026-11-12 at commit b05a4cd0 (plus the uncommitted "Now" roadmap work)

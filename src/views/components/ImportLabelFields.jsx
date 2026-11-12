@@ -12,7 +12,7 @@ import {
 import PropTypes from 'prop-types'
 import { useTranslation } from 'react-i18next'
 
-import { getTextColorFromBackgroundColor } from '../../utils/Colors.jsx'
+import { getTextColorFromBackgroundColor } from '../../utils/Colors'
 import { filterLabels, sortLabels } from '../../utils/LabelPickerOptions'
 import EditorSection from '../ChoreEdit/EditorSection'
 

@@ -1,5 +1,5 @@
-import App from './App.jsx'
-import Contexts from './contexts/Contexts.jsx'
+import App from './App'
+import Contexts from './contexts/Contexts'
 
 const Application = () => (
   <Contexts>

@@ -37,16 +37,16 @@ import {
   YAxis,
 } from 'recharts'
 
-import { PAYWALL_REASON, usePaywall } from '../../contexts/PaywallContext.jsx'
-import { useChoresHistory } from '../../queries/ChoreQueries.jsx'
-import { useCircleMembers, useUserProfile } from '../../queries/UserQueries.jsx'
-import { isPlusHistoryWindow } from '../../utils/entitlements.js'
-import { RedeemPoints } from '../../utils/Fetcher.jsx'
-import { resolvePhotoURL } from '../../utils/Helpers.jsx'
-import LoadingComponent from '../components/Loading.jsx'
+import { PAYWALL_REASON, usePaywall } from '../../contexts/PaywallContext'
+import { useChoresHistory } from '../../queries/ChoreQueries'
+import { useCircleMembers, useUserProfile } from '../../queries/UserQueries'
+import { isPlusHistoryWindow } from '../../utils/entitlements'
+import { RedeemPoints } from '../../utils/Fetcher'
+import { resolvePhotoURL } from '../../utils/Helpers'
+import LoadingComponent from '../components/Loading'
 import RedeemPointsModal from '../Modals/RedeemPointsModal'
-import { useRedemptions } from '../Rewards/RewardQueries.jsx'
-import RewardsView from '../Rewards/RewardsView.jsx'
+import { useRedemptions } from '../Rewards/RewardQueries'
+import RewardsView from '../Rewards/RewardsView'
 
 const PERIODS = [
   { shortKey: 'tabs.short7d', value: 7 },

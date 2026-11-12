@@ -1,37 +1,32 @@
 // https://www.typescriptlang.org/tsconfig/
+// Bundler-mode config for the Vite app. Vite/SWC does the emitting; tsc only
+// type-checks. checkJs and strict stay off until files are converted layer by
+// layer (see docs/ai/status-and-roadmap.md).
 {
   "compilerOptions": {
-    // Type Checking
-    "allowUnreachableCode": false,
-    "allowUnusedLabels": false,
-    "alwaysStrict": true,
-    "exactOptionalPropertyTypes": true,
-    "noFallthroughCasesInSwitch": true,
-    "noImplicitAny": true,
-    "noImplicitOverride": true,
-    "noImplicitReturns": true,
-    "noImplicitThis": true,
-    "noPropertyAccessFromIndexSignature": true,
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
-    "strict": true,
-    "strictBindCallApply": true,
-    "strictFunctionTypes": true,
-    "strictNullChecks": true,
-    "strictPropertyInitialization": true,
-    "useUnknownInCatchVariables": true,
+    // Language and Environment
+    "target": "ES2020",
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "jsx": "react-jsx",
+    "types": ["vite/client"],
 
     // Modules
-    "module": "nodenext",
-    "moduleResolution": "nodenext",
-    "rootDir": "src",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "paths": { "@/*": ["./src/*"] },
+
+    // JavaScript
+    "allowJs": true,
+    "checkJs": false,
 
     // Emit
-    "outDir": "dist",
-    "sourceMap": true,
-    "sourceRoot": "./src/",
+    "noEmit": true,
 
-    // Language and Environment
-    "target": "ES2020"
-  }
+    // Type Checking
+    "strict": false,
+    "skipLibCheck": true
+  },
+  "include": ["src"]
 }

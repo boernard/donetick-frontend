@@ -8,7 +8,7 @@ import { useUserProfile } from '../queries/UserQueries'
 import { useAlerts } from '../service/AlertsProvider'
 import { useNotification } from '../service/NotificationProvider'
 import { apiClient } from '../utils/ApiClient'
-import { useAuth } from './useAuth.jsx'
+import { useAuth } from './useAuth'
 
 const SSE_STATES = {
   CONNECTING: 0,
@@ -47,11 +47,10 @@ export const useSSE = () => {
   const getSSEUrl = useCallback(() => {
     const authToken = token
     if (!authToken || !isAuthenticated) {
-      console.log(
-        'SSE: No valid authentication token',
-        authToken,
+      console.log('SSE: No valid authentication token', {
+        hasToken: Boolean(authToken),
         isAuthenticated,
-      )
+      })
       return null
     }
 

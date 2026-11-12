@@ -4,8 +4,8 @@ import { ChevronRight, Gavel, PrivacyTip } from '@mui/icons-material'
 import { Button, Stack } from '@mui/joy'
 import { useTranslation } from 'react-i18next'
 
-import ModalActions from '../../components/common/ModalActions.jsx'
-import { useResponsiveModal } from '../../hooks/useResponsiveModal.js'
+import ModalActions from '../../components/common/ModalActions'
+import { useResponsiveModal } from '../../hooks/useResponsiveModal'
 
 const POLICY_BASE_URL = 'https://app.donetick.com'
 

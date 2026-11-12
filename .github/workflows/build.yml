@@ -19,3 +19,5 @@ jobs:
         run: npm i
       - run: npm run build
       - run: npm run lint:ci
+      - run: npm run typecheck
+      - run: npm test

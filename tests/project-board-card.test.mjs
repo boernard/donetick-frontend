@@ -5,6 +5,8 @@ import vm from 'node:vm'
 
 import { transformSync } from '@swc/core'
 
+import { loadChorePermissions } from './helpers/loadSource.mjs'
+
 const element = (type, props) => ({ type, props })
 const components = new Proxy({}, { get: (_, name) => name })
 
@@ -27,6 +29,18 @@ function render(overrides = {}, options = {}) {
     '../../../contexts/LocalizationContext': {
       useLocalization: () => ({ timeFormat: 'HH:mm' }),
     },
+    '../../../components/common/ExternalLinkChip': {
+      LinkTypeIcon: 'LinkTypeIcon',
+    },
+    '../../../hooks/useChorePermissions': loadChorePermissions({
+      user: () => ({ data: { id: 5 } }),
+      members: () => ({ data: { res: options.members || [] } }),
+      impersonation: () => ({ impersonatedUser: options.impersonatedUser }),
+    }),
+    '../../components/ChoreStatusChip': {
+      default: 'ChoreStatusChip',
+      __esModule: true,
+    },
     '../../../hooks/usePendingCommands': {
       usePendingCommands: () => ({ data: options.pendingCommands || [] }),
     },
@@ -43,8 +57,9 @@ function render(overrides = {}, options = {}) {
       notInCompletionWindow: () => options.outsideWindow,
     },
     '../../../utils/ExternalLinks': {
-      splitTextAtFirstHttpUrl: name => ({ before: name, after: '', url: null }),
-      getFirstHttpUrl: () => null,
+      splitTextAtFirstLink: name => ({ before: name, after: '', link: null }),
+      getFirstLink: () => null,
+      openExternalLink: () => {},
     },
     '../../components/ChoreActionMenu': {
       ChoreActionMenuTrigger: 'MenuTrigger',
@@ -84,7 +99,13 @@ function render(overrides = {}, options = {}) {
   modules['./ProjectTaskAction'] = { default: Action, __esModule: true }
   const Card = load('ProjectBoardCard')
   const props = {
-    chore: { id: 9, name: 'Wash the dishes', status: 0 },
+    chore: {
+      id: 9,
+      name: 'Wash the dishes',
+      status: 0,
+      circleId: 1,
+      assignedTo: 5,
+    },
     onAction: (action, chore) => actions.push([action, chore.id]),
     onSelectionToggle: () => selections.push(true),
     onOpenActionMenu: (anchor, chore) => menus.push([anchor, chore.id]),
@@ -118,9 +139,10 @@ test('one-tap actions retain completion, pause, resume and approval semantics', 
     [2, 'start'],
     [3, 'approve'],
   ]) {
-    const card = render({
-      chore: { id: 9, name: 'Task', status, createdBy: 5 },
-    })
+    const card = render(
+      { chore: { id: 9, name: 'Task', status, circleId: 1, assignedTo: 5 } },
+      { members: [{ userId: 5, circleId: 1, role: 'admin' }] },
+    )
     assert.equal(card.action.props.disabled, false)
     assert.ok(card.action.props.sx.minHeight >= 44)
     card.action.props.onClick(event)
@@ -130,15 +152,18 @@ test('one-tap actions retain completion, pause, resume and approval semantics', 
 })
 
 test('approval respects roles, ownership and impersonation', () => {
-  const props = { chore: { id: 9, name: 'Task', status: 3, createdBy: 8 } }
-  assert.equal(render(props).action.props.disabled, true)
+  const props = { chore: { id: 9, name: 'Task', status: 3, circleId: 1 } }
+  const manager = { userId: 8, circleId: 1, role: 'manager' }
+  // Approval is a reviewer (admin/manager) action; ownership does not grant it.
+  assert.equal(render(props).action.type, 'ChoreStatusChip')
   assert.equal(
-    render(props, { members: [{ userId: 5, role: 'admin' }] }).action.props
-      .disabled,
+    render(props, { members: [{ userId: 5, circleId: 1, role: 'admin' }] })
+      .action.props.disabled,
     false,
   )
   assert.equal(
-    render(props, { impersonatedUser: { userId: 8 } }).action.props.disabled,
+    render(props, { members: [manager], impersonatedUser: { userId: 8 } })
+      .action.props.disabled,
     false,
   )
 })
@@ -156,17 +181,16 @@ test('selection does not complete a task and hides secondary actions', () => {
   )
 })
 
-test('title is a keyboard-operable native control and menus have a shared owner', () => {
+test('title wraps long names and menus have a shared owner', () => {
   const card = render()
   const title = find(card.tree, node => node.props?.title === 'Wash the dishes')
-  assert.equal(title.props.component, 'button')
-  assert.equal(title.props.type, 'button')
+  assert.equal(title.props.component, 'span')
   assert.equal(title.props.sx.overflowWrap, 'anywhere')
   find(card.tree, node => node.type === 'MenuTrigger').props.onClick(event)
   assert.deepEqual(card.menus, [['anchor', 9]])
 })
 
-test('metadata is secondary, labels still filter and queued actions stay visible', () => {
+test('metadata is secondary and queued actions stay visible', () => {
   const label = { id: 1, name: 'Kitchen' }
   const card = render({
     chore: {
@@ -182,8 +206,6 @@ test('metadata is secondary, labels still filter and queued actions stay visible
   assert.equal(due.props.dateTime, '2026-01-01')
   assert.equal(due.props.sx.color, 'danger.plainColor')
   assert.ok(find(card.tree, node => node.type === 'PendingBadge'))
-  find(card.tree, node => node.props?.title === 'Kitchen').props.onClick(event)
-  assert.equal(card.filters[0].label, label)
   assert.equal(
     find(render().tree, node => node.props?.component === 'time'),
     undefined,

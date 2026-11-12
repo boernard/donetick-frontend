@@ -72,7 +72,7 @@ import EmptyState from '../../components/common/EmptyState'
 import KeyboardShortcutHint from '../../components/common/KeyboardShortcutHint'
 import NumberInput from '../../components/common/NumberInput'
 import PermissionDeniedModal from '../../components/common/PermissionDeniedModal'
-import NotificationTemplate from '../../components/NotificationTemplate.jsx'
+import NotificationTemplate from '../../components/NotificationTemplate'
 import { usePageShortcutScope } from '../../contexts/KeyboardShortcutScopeContext'
 import { usePaywall } from '../../contexts/PaywallContext'
 import { useDocumentScanner } from '../../hooks/useDocumentScanner'
@@ -83,11 +83,11 @@ import {
   useDeleteChores,
   useUnArchiveChore,
   useUpdateChore,
-} from '../../queries/ChoreQueries.jsx'
-import { useCircleMembers, useUserProfile } from '../../queries/UserQueries.jsx'
+} from '../../queries/ChoreQueries'
+import { useCircleMembers, useUserProfile } from '../../queries/UserQueries'
 import { useNotification } from '../../service/NotificationProvider'
 import { canEditChore } from '../../utils/ChoreAccess'
-import { getTextColorFromBackgroundColor } from '../../utils/Colors.jsx'
+import { getTextColorFromBackgroundColor } from '../../utils/Colors'
 import { sanitizeRemindersForPlan } from '../../utils/entitlements'
 import {
   DeleteChoreAttachment,
@@ -100,7 +100,7 @@ import { imageSourceToFile } from '../../utils/FileConvert'
 import { isPlusAccount, resolvePhotoURL } from '../../utils/Helpers'
 import { getImageSrc, removeCachedImage } from '../../utils/ImageCache'
 import { filterLabels, sortLabels } from '../../utils/LabelPickerOptions'
-import Priorities from '../../utils/Priorities.jsx'
+import Priorities from '../../utils/Priorities'
 import {
   filterMembersForProject,
   getProjectAudienceIds,
@@ -108,14 +108,14 @@ import {
   PROJECT_VISIBILITY,
 } from '../../utils/ProjectAccess'
 import { getIconComponent } from '../../utils/ProjectIcons'
-import { getSafeBottomPadding } from '../../utils/SafeAreaUtils.js'
+import { getSafeBottomPadding } from '../../utils/SafeAreaUtils'
 import { useSinglePageTaskEditor } from '../../utils/TaskEditorPreferences'
 import { generateUUID } from '../../utils/UUID'
 import { sortWeekdays } from '../../utils/WeekdayUtils'
-import { useProjectFilter } from '../Chores/hooks/useProjectFilter.js'
-import LoadingComponent from '../components/Loading.jsx'
-import RichTextEditor from '../components/RichTextEditor.jsx'
-import SubTasks from '../components/SubTask.jsx'
+import { useProjectFilter } from '../Chores/hooks/useProjectFilter'
+import LoadingComponent from '../components/Loading'
+import RichTextEditor from '../components/RichTextEditor'
+import SubTasks from '../components/SubTask'
 import { useLabels } from '../Labels/LabelQueries'
 import AttachmentViewerModal from '../Modals/Inputs/AttachmentViewerModal'
 import ConfirmationModal from '../Modals/Inputs/ConfirmationModal'

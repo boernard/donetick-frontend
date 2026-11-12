@@ -1,4 +1,4 @@
-import { getProjectAudienceIds, isRestrictedProject } from './ProjectAccess.js'
+import { getProjectAudienceIds, isRestrictedProject } from './ProjectAccess'
 
 // Mirrors dt-core's CanComplete, CanEdit, CanDelegate and reviewer rules.
 export const getChorePermissions = (chore, userId, members = []) => {

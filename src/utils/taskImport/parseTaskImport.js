@@ -1,10 +1,10 @@
-import { parseRepeatExpression } from './parseRepeatExpression.js'
+import { parseRepeatExpression } from './parseRepeatExpression'
 import {
   missingInputValues,
   parseInputs,
   substituteLabels,
   substituteRow,
-} from './templateInputs.js'
+} from './templateInputs'
 
 export const MAX_IMPORT_TASKS = 200
 export const MAX_IMPORT_BYTES = 256 * 1024

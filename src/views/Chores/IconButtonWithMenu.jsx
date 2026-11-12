@@ -3,7 +3,7 @@ import IconButton from '@mui/joy/IconButton'
 import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
-import { getTextColorFromBackgroundColor } from '../../utils/Colors.jsx'
+import { getTextColorFromBackgroundColor } from '../../utils/Colors'
 
 const IconButtonWithMenu = ({
   icon,
