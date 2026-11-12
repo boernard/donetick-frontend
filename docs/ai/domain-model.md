@@ -1,0 +1,91 @@
+# Domain model
+
+The backend (Go, not in this repo) owns the schema; this frontend has **no
+types or schema files** (plain JSX). Shapes below are inferred from consumers
+and are marked *(unverified)* where only a single call site was seen. See
+[architecture.md](architecture.md) for data flow, [directory-map.md](directory-map.md)
+for file locations, [gotchas.md](gotchas.md) for pitfalls.
+
+Envelope: most list/detail endpoints return `{ res: ... }` (e.g.
+`src/queries/ChoreQueries.jsx:100`, `src/queries/UserQueries.jsx:80`). Cached
+chore lists keep that envelope: `queryClient.getQueryData(['chores', false]).res`.
+
+## Entities
+
+| Entity | Main fields (camelCase unless noted) | Defined / consumed |
+|---|---|---|
+| Chore / task | `id, name, description, dueDate, nextDueDate, frequencyType, frequency, frequencyMetadata, assignedTo, assignees[], assignStrategy, isRolling, isActive, status, priority, points, requireApproval, isPrivate, completionWindow, labels, labelsV2, subTasks, thingTrigger, notification, notificationMetadata, circleId, createdBy, projectId` | Payload assembled in `src/views/ChoreEdit/ChoreEdit.jsx:640-670`; fetched by `GetChoresNew`/`GetChoreDetailById` (`src/utils/Fetcher.jsx:120,164`); cached via `useChores`, `useChoreDetails`, `useChore` (`src/queries/ChoreQueries.jsx`); status/sort/group/filter helpers in `src/utils/Chores.jsx`; access rules `src/utils/ChoreAccess.js` |
+| Project | `id, name, created_by, visibility ('private'\|'members'\|'circle'), memberIds[], isPrivate (legacy)`; synthetic `id: 'default'` project | `src/views/Projects/ProjectQueries.js` (hooks live in the view folder, not `src/queries`); `src/utils/ProjectAccess.js:1-40` |
+| Project section | per project; `GetProjectSections(projectId)`, create/rename/move/delete | `Fetcher.jsx:1117+`; `ProjectQueries.js:236+`, key `['projectSections', projectId]` |
+| User (profile) | `id, username, displayName, email, circleID, parentUserId, userType`-ish, `points`, `pointsRedeemed` (balance = difference, `UserPoints.jsx:200`), `expiration` (Plus), `subscription`, `timezone`, `image/photo` | `GetUserProfile` -> `useUserProfile` (`src/queries/UserQueries.jsx:65`, key `['userProfile', token]`, 30 min stale); child/parent logic `src/utils/UserHelpers.js` |
+| Circle | household/group; `GetUserCircle` (`/circles/`), members via `GetAllCircleMembers` (`/circles/members`), join requests, roles | `Fetcher.jsx:335-415`; keys `['userCircle']`, `['circleMembers']`, `['allCircleMembers']`, `['circleMemberRequests']` |
+| Circle member | `userId, circleId, role, points, displayName` | `src/utils/ChoreAccess.js:6,58`; `UpdateMemberRole` |
+| Label | `id, name, color`; `GET/POST/PUT /labels`, `DELETE /labels/:id` | `Fetcher.jsx:555-590`, key `['labels']`; UI `src/views/Labels/` |
+| Subtask | `{ id, name, orderId, completedAt }` *(field list partly unverified)*; stored on chore as `subTasks` | `CompleteSubTask` (`Fetcher.jsx:219`, PUT `/chores/:id/subtask`); `useCompleteSubTask` (`src/queries/SubtaskQueries.jsx`); SSE patch `src/hooks/useSSE.js:241` |
+| Thing | `id, name, type ('text'\|'number'\|'boolean'), state (string, e.g. `'true'`)` | `Fetcher.jsx:452+`; `src/views/Things/`; history hook `src/queries/ThingQueries.jsx` (infinite query, key `['thingHistory', id]`) |
+| Thing trigger | `chore.thingTrigger = { thing, condition (eq/neq/gt/gte/lt/lte), triggerState }` | Built in `src/views/ChoreEdit/ThingTriggerSection.jsx:80-95`, copied at `ChoreEdit.jsx:311,1498` |
+| Reward | `id, name, description, pointsCost` | `GetRewards`/`CreateReward`/`UpdateReward` (`Fetcher.jsx:695+`); `src/views/Rewards/RewardQueries.jsx` (`['rewards']`) |
+| Redemption | status `'pending'\|'approved'\|'rejected'`; admins see whole circle, others own | `GetRedemptions(status)` (`Fetcher.jsx:735`), `useRedemptions` key `['redemptions', status\|'all']`; approve/reject/`RedeemReward` |
+| Points | per-member balance; `RedeemPoints(userId, points, circleID)` | `Fetcher.jsx:687`; `src/views/User/UserPoints.jsx` |
+| Notification prefs / target / device token | prefs: `GET/PUT /users/notifications/preferences`; target: `UpdateNotificationTarget`; device tokens register/unregister | `Fetcher.jsx:415-435`; `UserQueries.jsx:101,127`; keys `['deviceTokens']`, `['notificationPreferences']`; local scheduling `src/views/Chores/LocalNotificationScheduler` |
+| Subscription / plan | No separate entity: `userProfile.expiration` in the future = Plus. Free limits in `src/utils/entitlements.js` (30-day history, 1 reminder, 5 projects, 2 quick filters). `CancelSubscription`, `GetSubscriptionSession` in Fetcher | `isPlusAccount` `src/utils/Helpers.jsx:5`; paywall `src/contexts/PaywallContext.jsx` |
+| Timer session | `GetChoreTimer(choreId)` returns `{ res: { startTime, endTime, ... sessions } }` *(sessions shape unverified)*; open session = no `endTime` | `src/queries/TimeQueries.jsx` (key `['choreTimer', choreId]`); UI `src/views/Timer/TimerDetails.jsx:100-145`; start/pause/reset/clear/update/delete session mutations |
+| History entry | `ChoreHistoryStatus`: STARTED 0, COMPLETED 1, SKIPPED 2, PENDING_APPROVAL 3, REJECTED 4, MISSED 5, RESCHEDULED 6 | `src/utils/Chores.jsx:16`; `useChoreHistory` (`['choreHistory', id]`), `useChoresHistory` (`['choresHistory', limit]`); free-plan trimming in `entitlements.js:61` |
+| Filter (saved/quick) | `{type, operator, value}` conditions; pin & usage tracking | `src/utils/FilterEngine.js`; `Fetcher.jsx` `GetFilters*`; keys `['filters', ...]` |
+| Attachment | `GetChoreAttachments`, upload/delete, draft attachments, `SignAssetURL` | key `['choreAttachments', choreId]` |
+
+Chore enums: `ChoreStatus` INACTIVE 0, ACTIVE 1, PAUSED 2, PENDING_APPROVAL 3
+(`src/utils/Chores.jsx:25`). Grouping/sort keys (`'due_date'`, `'priority'`,
+`'labels'`, `'created_date'`, `'updated_date'`, `'default'`) at
+`Chores.jsx:7-14`.
+
+## Relationships
+
+- Circle 1-N members (users); chore, project, label, reward, thing belong to the caller's circle.
+- Chore N-1 project (via `projectId` and a section), N-N labels (`labelsV2`), 1-N subTasks, 0-1 thingTrigger, 1-N history entries, 1-N timer sessions.
+- Chore `assignedTo` = one member's user id; `assignees[]` = eligible rotation pool (`{userId,...}`, see `Chores.jsx:431`).
+- Redemption N-1 reward, N-1 member.
+- Offline: chores/profile/labels/etc. mirrored to IndexedDB (`src/utils/OfflineDB.js`), mutations queued (`src/utils/CommandQueue.js`, `['pendingCommands']`); see [architecture.md](architecture.md).
+
+## Known shape inconsistencies (grep-verified)
+
+| Inconsistency | Reality |
+|---|---|
+| `labels` vs `labelsV2` | Chore carries both: `labels` = array of names (legacy), `labelsV2` = array of label objects `{id,name,color}`. `ChoreEdit.jsx:658-659` writes both; **all readers use `labelsV2`** (19 files, e.g. `FilterEngine.js:245`). Write both when building a chore payload. |
+| `subTasks` vs `subtasks` | API field is **`subTasks`** (`ChoreEdit.jsx:664`, `ChoreView.jsx:1265`, `useSSE.js:241`). Lowercase `subtasks` is only a local variable (`ProjectBoardCard.jsx:63`) or UI/i18n text (`choreView.subtasks`). |
+| `createdBy` vs `created_by` | Chore: `createdBy` (`ChoreAccess.js:8`, `Chores.jsx:435`). Project: **`created_by`** (`ProjectAccess.js:30`, `ProjectView.jsx:68`). `created_by_me` is a filter id string, not a field. The synthetic default project sets `created_by: 'system'` (`ProjectQueries.js:213`). |
+| `dueDate` vs `due_date` | Data field is `dueDate` (ISO string); `due_date` is only the sort/group key constant (`Chores.jsx:9`) and analytics `has_due_date`. `nextDueDate` is the server-computed next occurrence; the editor sets both (`ChoreEdit.jsx:647`). |
+| `circleId` vs `circleID` | Chore and circle member: `circleId` (`ChoreAccess.js:6`). User profile: **`circleID`** (`UserHelpers.js:49`, `UserPoints.jsx:816`, `EditHistoryModal.jsx:22`). Fetcher params also say `circleID`. Never assume one spelling across entities. |
+| `assignee` vs `assignedTo` | Chore field is `assignedTo` (single user id) plus `assignees[]`. `assignee` appears only as a filter type (`FilterEngine.js:21`), Fetcher name (`UpdateChoreAssignee`, `Fetcher.jsx:273`) and analytics. |
+| `triggerState` | **Always a string** in the API for every thing type. `ThingTriggerSection.jsx:86` does `String(triggerState)` before `onTriggerUpdate` (commit `99e6a9f`; note the fix is in `ThingTriggerSection.jsx`, not `ChoreEdit.jsx`, which just copies it at `:311`). Validation in the same file (`:20-48`) parses numbers from the string. Thing `state` is likewise a string (`thing.state === 'true'`, `ThingsView.jsx:65`). |
+| `isPrivate` vs `visibility` | Projects: server sends `visibility` (+`memberIds`); old servers only `isPrivate`. Normalise through `getProjectVisibility` (`ProjectAccess.js:11`). |
+
+## Fetcher return conventions
+
+`src/utils/Fetch.jsx` does not exist; everything is in `src/utils/Fetcher.jsx`
+(~1230 lines, one big `export { ... }` block at the bottom, PascalCase names).
+It wraps `apiClient` (`src/utils/ApiClient.js`) via `Fetch(endpoint, {method,
+headers, body})` (`Fetcher.jsx:4`).
+
+- **Most functions return the raw `Response`**; callers do `if (!resp.ok)` then `await resp.json()` (e.g. `GetChoreByID`, `GetUserProfile`, `GetUserCircle`, `GetThings`, `GetProjects`, `GetChoreTimer`).
+- **Return parsed JSON**: `createChore` (`:48`), `GetChoresNew` (`:120`), `GetAllCircleMembers` (`:335`), `GetLabels` (`:562`), `GetResource` (`:570`), `GetRewards`, `CreateReward`, `UpdateReward`, `RedeemReward`, `GetRedemptions` (`:695-740`).
+- **`ActionFetch`** (`:20`) wraps `Fetch` for mutations and **throws** on non-2xx with the server `error`/`message`, returning the Response on success (e.g. `CompleteSubTask`, `SkipChore`, `UpdateTimeSession`). Use it for new action endpoints.
+- Auth/signup/password functions call bare `fetch` after `apiClient.init(true)` (`signUp`, `UpdatePassword`).
+- Both `createChore` (lowercase, parsed) and `CreateChore` (Pascal, Response) are exported; do not confuse them.
+
+When wrapping in a query, check which style the function uses: `useChores`
+uses parsed `GetChoresNew`; `useChoreDetails`/`useChoreTimer` call
+`response.ok` + `response.json()`.
+
+## Query keys in use
+
+`['chores', includeArchive]`, `['choreDetails', id]`, `['chore', id]`,
+`['choreHistory', id]`, `['choresHistory', limit]`, `['choreTimer', id]`,
+`['choreAttachments', id]`, `['projects']`, `['projects', id]`,
+`['projectSections', id]`, `['labels']`, `['filters', ...]`, `['userProfile',
+token]`, `['userCircle']`, `['circleMembers']`, `['allCircleMembers']`,
+`['circleMemberRequests']`, `['childUsers']`, `['rewards']`,
+`['redemptions', status]`, `['thingHistory', id]`, `['deviceTokens']`,
+`['notificationPreferences']`, `['resource']` (6 h stale), `['pendingCommands']`.
+
+Last verified: 2026-11-12 at commit 99e6a9f
